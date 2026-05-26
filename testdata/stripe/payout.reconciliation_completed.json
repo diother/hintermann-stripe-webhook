@@ -1,0 +1,9 @@
+{
+  "api_version": "2024-06-20",
+  "type": "payout.reconciliation_completed",
+  "data": {
+    "object": {
+      "...": "payout object here"
+    }
+  }
+}
