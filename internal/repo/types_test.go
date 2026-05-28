@@ -22,11 +22,7 @@ func TestFromStripePayoutAndTotals(t *testing.T) {
 		Net:     "194",
 	}
 
-	if got.Id != want.Id ||
-		got.Created != want.Created ||
-		got.Gross != want.Gross ||
-		got.Fee != want.Fee ||
-		got.Net != want.Net {
+	if !equalPayout(got, want) {
 		t.Errorf("mismatch:\ngot  %+v\nwant %+v", got, want)
 	}
 }
@@ -60,14 +56,7 @@ func TestFromChargeTransactionAndPayoutId(t *testing.T) {
 		Net:         "90",
 	}
 
-	if got.Id != want.Id ||
-		got.Created != want.Created ||
-		got.ClientName != want.ClientName ||
-		got.ClientEmail != want.ClientEmail ||
-		got.PayoutId != want.PayoutId ||
-		got.Gross != want.Gross ||
-		got.Fee != want.Fee ||
-		got.Net != want.Net {
+	if !equalInvoice(got, want) {
 		t.Errorf("mismatch:\ngot  %+v\nwant %+v", got, want)
 	}
 }
@@ -119,6 +108,14 @@ func TestFromChargeTransactionsAndPayoutId(t *testing.T) {
 			t.Errorf("mismatch at index %d:\ngot  %+v\nwant %+v", i, got[i], want[i])
 		}
 	}
+}
+
+func equalPayout(a, b Payout) bool {
+	return a.Id == b.Id &&
+		a.Created == b.Created &&
+		a.Gross == b.Gross &&
+		a.Fee == b.Fee &&
+		a.Net == b.Net
 }
 
 func equalInvoice(a, b Invoice) bool {
