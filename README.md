@@ -1,10 +1,68 @@
+# Stripe payout reconciliation webhook
+
+Small Go service that receives Stripe payout reconciliation webhooks, validates and enriches the payout data, and persists normalized payout + invoice records into append-only CSV files.
+
+## Project structure
+
+```text
+cmd/              entrypoint
+data/             CSV persistence
+docs/             design notes
+internal/
+├── handler/      orchestration
+├── repo/         CSV persistence + serialization
+├── stripeapi/    Stripe API enrichment
+└── validation/   validation rules
+scripts/          local replay
+testdata/         webhook fixtures
+```
+
+## Processing flow
+
+```text
+Stripe webhook
+→ request parsing
+→ validation
+→ Stripe API enrichment
+→ validation
+→ row transformation
+→ persistence
+```
+
+The handler owns orchestration directly. Effects remain visible in the main execution flow.
+
+## Persistence model
+
+```text
+docs/persistence-model.md
+```
+
+## Environment variables
+
+```bash
+export STRIPE_SECRET=sk_live_...
+export WEBHOOK_SECRET=whsec_...
+```
+
+## Running locally
+
+```bash
+go run ./cmd
+```
+
+Default webhook endpoint:
+
+```text
+POST /webhook
+```
+
 ## Local development with Stripe test mode
 
 Found in: Stripe Dashboard → Developers → API Keys
 
 ```bash
 export STRIPE_SECRET=sk_test_...
-````
+```
 
 ```bash
 stripe login
@@ -17,7 +75,18 @@ This outputs a webhook signing secret:
 export WEBHOOK_SECRET=whsec_...
 ```
 
----
+## Testing
+
+The system prioritizes unit testing of pure functions:
+
+* validation rules
+* transformation functions
+
+Run all tests:
+
+```bash
+go test ./...
+```
 
 ## Webhook testing limitation
 
@@ -27,12 +96,9 @@ It cannot be triggered deterministically because it depends on Stripe’s intern
 
 To test this event, we use a deterministic replay flow with a fixed payout object.
 
----
-
 ## Replay script
 
-Source payout:
-Stripe Dashboard → Payouts → select payout → copy full payout object
+Source payout: Stripe Dashboard → Payouts → select payout → copy full payout object
 
 Store it in:
 
@@ -40,7 +106,7 @@ Store it in:
 testdata/stripe/payout.reconciliation_completed.json
 ```
 
-Inside the `data.object` field of a minimal event wrapper.
+inside the `data.object` field of a minimal event wrapper.
 
 Then replay locally:
 
