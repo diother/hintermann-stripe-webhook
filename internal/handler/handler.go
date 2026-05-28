@@ -99,20 +99,20 @@ func processTransactions(
 	payoutTxn *stripe.BalanceTransaction,
 	chargeTxns []*stripe.BalanceTransaction,
 ) (
-	*repo.Payout,
+	repo.Payout,
 	[]repo.Invoice, error,
 ) {
 	if err := validation.ValidatePayoutTransaction(payoutTxn); err != nil {
-		return nil, nil, fmt.Errorf("payout transaction invalid: %w", err)
+		return repo.Payout{}, nil, fmt.Errorf("payout transaction invalid: %w", err)
 	}
 
 	if err := validation.ValidateChargeTransactions(chargeTxns); err != nil {
-		return nil, nil, fmt.Errorf("charge transactions invalid: %w", err)
+		return repo.Payout{}, nil, fmt.Errorf("charge transactions invalid: %w", err)
 	}
 
 	gross, fee, net, err := validation.ValidateMatchingSums(payoutTxn, chargeTxns)
 	if err != nil {
-		return nil, nil, fmt.Errorf("matching sum validation failed: %w", err)
+		return repo.Payout{}, nil, fmt.Errorf("matching sum validation failed: %w", err)
 	}
 
 	payout := repo.FromStripePayoutAndTotals(stripePayout, gross, fee, net)

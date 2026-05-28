@@ -23,7 +23,7 @@ const (
 
 var mu sync.Mutex
 
-func WritePayoutAndInvoices(p *Payout, ivs []Invoice) (WriteResult, error) {
+func WritePayoutAndInvoices(p Payout, ivs []Invoice) (WriteResult, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -49,7 +49,7 @@ func WritePayoutAndInvoices(p *Payout, ivs []Invoice) (WriteResult, error) {
 		return 0, err
 	}
 
-	payouts = append(payouts, *p)
+	payouts = append(payouts, p)
 	invoices = append(invoices, ivs...)
 
 	if err := os.MkdirAll(tmpDir, 0755); err != nil {
