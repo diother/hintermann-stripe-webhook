@@ -17,34 +17,56 @@ import (
 func HandleWebhook(webhookSecret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			fail(w, http.StatusMethodNotAllowed, fmt.Errorf("method not allowed"))
+			fail(
+				w,
+				http.StatusMethodNotAllowed,
+				fmt.Errorf("method not allowed"),
+			)
 			return
 		}
 
 		// request materialization
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			fail(w, http.StatusBadRequest, fmt.Errorf("failed to read body: %w", err))
+			fail(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to read body: %w", err),
+			)
 			return
 		}
 		r.Body.Close()
 
 		// webhook parsing + validation
-		stripePayout, err := parseWebhookEvent(body, r.Header.Get("Stripe-Signature"), webhookSecret)
+		stripePayout, err := parseWebhookEvent(
+			body,
+			r.Header.Get("Stripe-Signature"),
+			webhookSecret,
+		)
 		if err != nil {
 			fail(w, http.StatusBadRequest, err)
 			return
 		}
 
 		// api enrichment
-		payoutTxn, chargeTxns, err := stripeapi.FetchRelatedTransactions(stripePayout.ID)
+		payoutTxn, chargeTxns, err := stripeapi.FetchRelatedTransactions(
+			stripePayout.ID,
+		)
 		if err != nil {
-			fail(w, http.StatusInternalServerError, fmt.Errorf("transaction fetch failed: %w", err))
+			fail(
+				w,
+				http.StatusInternalServerError,
+				fmt.Errorf("transaction fetch failed: %w", err),
+			)
 			return
 		}
 
 		// transformation
-		payout, invoices, err := processTransactions(stripePayout, payoutTxn, chargeTxns)
+		payout, invoices, err := processTransactions(
+			stripePayout,
+			payoutTxn,
+			chargeTxns,
+		)
 		if err != nil {
 			fail(w, http.StatusInternalServerError, err)
 			return
@@ -53,7 +75,15 @@ func HandleWebhook(webhookSecret string) http.HandlerFunc {
 		// persistence + dedupe
 		result, err := repo.WritePayoutAndInvoices(payout, invoices)
 		if err != nil {
-			fail(w, http.StatusInternalServerError, fmt.Errorf("failed to persist payout %s: %w", stripePayout.ID, err))
+			fail(
+				w,
+				http.StatusInternalServerError,
+				fmt.Errorf(
+					"failed to persist payout %s: %w",
+					stripePayout.ID,
+					err,
+				),
+			)
 			return
 		}
 		switch result {
@@ -72,7 +102,14 @@ func fail(w http.ResponseWriter, status int, err error) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-func parseWebhookEvent(body []byte, signature string, webhookSecret string) (*stripe.Payout, error) {
+func parseWebhookEvent(
+	body []byte,
+	signature string,
+	webhookSecret string,
+) (
+	*stripe.Payout,
+	error,
+) {
 	event, err := webhook.ConstructEvent(body, signature, webhookSecret)
 	if err != nil {
 		return nil, fmt.Errorf("invalid signature: %w", err)
@@ -103,20 +140,32 @@ func processTransactions(
 	[]repo.Invoice, error,
 ) {
 	if err := validation.ValidatePayoutTransaction(payoutTxn); err != nil {
-		return repo.Payout{}, nil, fmt.Errorf("payout transaction invalid: %w", err)
+		return repo.Payout{},
+			nil,
+			fmt.Errorf("payout transaction invalid: %w", err)
 	}
 
 	if err := validation.ValidateChargeTransactions(chargeTxns); err != nil {
-		return repo.Payout{}, nil, fmt.Errorf("charge transactions invalid: %w", err)
+		return repo.Payout{},
+			nil,
+			fmt.Errorf("charge transactions invalid: %w", err)
 	}
 
-	gross, fee, net, err := validation.ValidateMatchingSums(payoutTxn, chargeTxns)
+	gross, fee, net, err := validation.ValidateMatchingSums(
+		payoutTxn,
+		chargeTxns,
+	)
 	if err != nil {
-		return repo.Payout{}, nil, fmt.Errorf("matching sum validation failed: %w", err)
+		return repo.Payout{},
+			nil,
+			fmt.Errorf("matching sum validation failed: %w", err)
 	}
 
 	payout := repo.FromStripePayoutAndTotals(stripePayout, gross, fee, net)
-	invoices := repo.FromChargeTransactionsAndPayoutId(chargeTxns, stripePayout.ID)
+	invoices := repo.FromChargeTransactionsAndPayoutId(
+		chargeTxns,
+		stripePayout.ID,
+	)
 
 	return payout, invoices, nil
 }
