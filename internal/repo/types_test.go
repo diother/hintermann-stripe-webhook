@@ -105,7 +105,12 @@ func TestFromChargeTransactionsAndPayoutId(t *testing.T) {
 	}
 	for i := range got {
 		if !equalInvoice(got[i], want[i]) {
-			t.Errorf("mismatch at index %d:\ngot  %+v\nwant %+v", i, got[i], want[i])
+			t.Errorf(
+				"mismatch at index %d:\ngot  %+v\nwant %+v",
+				i,
+				got[i],
+				want[i],
+			)
 		}
 	}
 }

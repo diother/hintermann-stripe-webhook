@@ -15,7 +15,12 @@ type Payout struct {
 	Net     string
 }
 
-func FromStripePayoutAndTotals(payout *stripe.Payout, gross, fee, net int) Payout {
+func FromStripePayoutAndTotals(
+	payout *stripe.Payout,
+	gross,
+	fee,
+	net int,
+) Payout {
 	return Payout{
 		Id:      payout.ID,
 		Created: time.Unix(payout.Created, 0).UTC().Format("2 Jan 2006"),
@@ -36,7 +41,10 @@ type Invoice struct {
 	Net         string
 }
 
-func FromChargeTransactionAndPayoutId(charge *stripe.BalanceTransaction, payoutId string) Invoice {
+func FromChargeTransactionAndPayoutId(
+	charge *stripe.BalanceTransaction,
+	payoutId string,
+) Invoice {
 	return Invoice{
 		Id:          charge.ID,
 		Created:     time.Unix(charge.Created, 0).UTC().Format("2 Jan 2006"),
@@ -49,7 +57,10 @@ func FromChargeTransactionAndPayoutId(charge *stripe.BalanceTransaction, payoutI
 	}
 }
 
-func FromChargeTransactionsAndPayoutId(charges []*stripe.BalanceTransaction, payoutId string) []Invoice {
+func FromChargeTransactionsAndPayoutId(
+	charges []*stripe.BalanceTransaction,
+	payoutId string,
+) []Invoice {
 	donations := make([]Invoice, len(charges))
 	for i, d := range charges {
 		donations[i] = FromChargeTransactionAndPayoutId(d, payoutId)
