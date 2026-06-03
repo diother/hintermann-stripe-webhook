@@ -9,9 +9,11 @@ import (
 )
 
 const (
-	dataDir = "data"
-	tmpDir  = "tmp"
-	oldDir  = "old"
+	dataDir     = "data"
+	tmpDir      = "tmp"
+	oldDir      = "old"
+	payoutsCsv  = "payouts.csv"
+	invoicesCsv = "invoices.csv"
 )
 
 type WriteResult int
@@ -269,9 +271,9 @@ func commitSnapshot() error {
 }
 
 func payoutsPath(dir string) string {
-	return filepath.Join(dir, "payouts.csv")
+	return filepath.Join(dir, payoutsCsv)
 }
 
 func invoicesPath(dir string) string {
-	return filepath.Join(dir, "invoices.csv")
+	return filepath.Join(dir, invoicesCsv)
 }
