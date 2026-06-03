@@ -17,9 +17,12 @@ func TestValidatePayout(t *testing.T) {
 			ReconciliationStatus: "completed",
 		}, "",
 		},
-		"nilPayout":            {nil, "is nil"},
-		"idMissing":            {&stripe.Payout{ID: ""}, "id is missing"},
-		"createdIsNotPositive": {&stripe.Payout{ID: "test_id"}, "created is not positive"},
+		"nilPayout": {nil, "is nil"},
+		"idMissing": {&stripe.Payout{ID: ""}, "id is missing"},
+		"createdIsNotPositive": {
+			&stripe.Payout{ID: "test_id"},
+			"created is not positive",
+		},
 		"reconciliationStatusNotCompleted": {
 			&stripe.Payout{ID: "test_id", Created: 123},
 			"reconciliation status is not completed",
@@ -31,7 +34,8 @@ func TestValidatePayout(t *testing.T) {
 			if tc.expectedErr == "" && err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 			}
-			if tc.expectedErr != "" && (err == nil || err.Error() != tc.expectedErr) {
+			if tc.expectedErr != "" &&
+				(err == nil || err.Error() != tc.expectedErr) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
 			}
 		})
@@ -54,13 +58,20 @@ func TestValidatePayoutTransaction(t *testing.T) {
 		},
 		"nilPayout":     {nil, "is nil"},
 		"typeNotPayout": {&stripe.BalanceTransaction{}, "type is not payout"},
-		"idMissing":     {&stripe.BalanceTransaction{Type: "payout"}, "id is missing"},
+		"idMissing": {
+			&stripe.BalanceTransaction{Type: "payout"},
+			"id is missing",
+		},
 		"createdNotPositive": {
 			&stripe.BalanceTransaction{Type: "payout", ID: "test_id"},
 			"created is not positive",
 		},
 		"amountNotNegative": {
-			&stripe.BalanceTransaction{Type: "payout", ID: "test_id", Created: 123},
+			&stripe.BalanceTransaction{
+				Type:    "payout",
+				ID:      "test_id",
+				Created: 123,
+			},
 			"amount is not negative",
 		},
 		"feeNot0": {&stripe.BalanceTransaction{
@@ -86,7 +97,8 @@ func TestValidatePayoutTransaction(t *testing.T) {
 			if tc.expectedErr == "" && err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 			}
-			if tc.expectedErr != "" && (err == nil || err.Error() != tc.expectedErr) {
+			if tc.expectedErr != "" &&
+				(err == nil || err.Error() != tc.expectedErr) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
 			}
 		})
@@ -114,16 +126,29 @@ func TestValidateChargeTransaction(t *testing.T) {
 			},
 		}, "",
 		},
-		"nilCharge":     {nil, "is nil"},
-		"typeStripeFee": {&stripe.BalanceTransaction{Type: "stripe_fee"}, "stripe_fee transactions are forbidden"},
-		"typeNotCharge": {&stripe.BalanceTransaction{}, "type is not charge, payment, or stripe_fee"},
-		"idMissing":     {&stripe.BalanceTransaction{Type: "charge"}, "id is missing"},
+		"nilCharge": {nil, "is nil"},
+		"typeStripeFee": {
+			&stripe.BalanceTransaction{Type: "stripe_fee"},
+			"stripe_fee transactions are forbidden",
+		},
+		"typeNotCharge": {
+			&stripe.BalanceTransaction{},
+			"type is not charge, payment, or stripe_fee",
+		},
+		"idMissing": {
+			&stripe.BalanceTransaction{Type: "charge"},
+			"id is missing",
+		},
 		"createdNotPositive": {
 			&stripe.BalanceTransaction{Type: "charge", ID: "test_id"},
 			"created is not positive",
 		},
 		"amountNotPositive": {
-			&stripe.BalanceTransaction{Type: "charge", ID: "test_id", Created: 123},
+			&stripe.BalanceTransaction{
+				Type:    "charge",
+				ID:      "test_id",
+				Created: 123,
+			},
 			"amount is not positive",
 		},
 		"feeNotPositive": {&stripe.BalanceTransaction{
@@ -191,7 +216,8 @@ func TestValidateChargeTransaction(t *testing.T) {
 			if tc.expectedErr == "" && err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 			}
-			if tc.expectedErr != "" && (err == nil || err.Error() != tc.expectedErr) {
+			if tc.expectedErr != "" &&
+				(err == nil || err.Error() != tc.expectedErr) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
 			}
 		})
@@ -253,7 +279,8 @@ func TestValidateChargeTransactions(t *testing.T) {
 			if tc.expectedErr == "" && err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 			}
-			if tc.expectedErr != "" && (err == nil || err.Error() != tc.expectedErr) {
+			if tc.expectedErr != "" &&
+				(err == nil || err.Error() != tc.expectedErr) {
 				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
 			}
 		})
@@ -297,7 +324,7 @@ func TestValidateMatchingSums(t *testing.T) {
 			expectedGross: 0,
 			expectedFee:   0,
 			expectedNet:   0,
-			expectedErr:   "payout amount does not match total charges minus fees. amount 295 != net 294",
+			expectedErr:   "payout amount mismatch. amount 295 != net 294",
 		},
 	}
 

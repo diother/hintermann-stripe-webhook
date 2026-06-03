@@ -5,7 +5,11 @@ import (
 	"github.com/stripe/stripe-go/v79/balancetransaction"
 )
 
-func FetchRelatedTransactions(id string) (*stripe.BalanceTransaction, []*stripe.BalanceTransaction, error) {
+func FetchRelatedTransactions(id string) (
+	*stripe.BalanceTransaction,
+	[]*stripe.BalanceTransaction,
+	error,
+) {
 	params := &stripe.BalanceTransactionListParams{}
 	params.Payout = &id
 	params.AddExpand("data.source")

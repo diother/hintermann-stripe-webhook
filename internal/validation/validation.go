@@ -99,7 +99,15 @@ func validateChargeTransaction(charge *stripe.BalanceTransaction) error {
 	return nil
 }
 
-func ValidateMatchingSums(payout *stripe.BalanceTransaction, charges []*stripe.BalanceTransaction) (int, int, int, error) {
+func ValidateMatchingSums(
+	payout *stripe.BalanceTransaction,
+	charges []*stripe.BalanceTransaction,
+) (
+	int,
+	int,
+	int,
+	error,
+) {
 	var gross, fee, net int
 
 	for _, charge := range charges {
@@ -111,7 +119,12 @@ func ValidateMatchingSums(payout *stripe.BalanceTransaction, charges []*stripe.B
 	payoutAmount := int(-payout.Amount)
 
 	if payoutAmount != net {
-		return 0, 0, 0, fmt.Errorf("payout amount does not match total charges minus fees. amount %v != net %v", payoutAmount, net)
+		return 0, 0, 0,
+			fmt.Errorf(
+				"payout amount mismatch. amount %v != net %v",
+				payoutAmount,
+				net,
+			)
 	}
 	return gross, fee, net, nil
 }
