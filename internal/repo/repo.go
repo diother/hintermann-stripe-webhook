@@ -4,23 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
-)
-
-const (
-	dataDir     = "data"
-	tmpDir      = "tmp"
-	oldDir      = "old"
-	payoutsCsv  = "payouts.csv"
-	invoicesCsv = "invoices.csv"
-)
-
-type WriteResult int
-
-const (
-	WriteResultCommitted WriteResult = iota
-	WriteResultIdempotent
 )
 
 var mu sync.Mutex
@@ -249,15 +233,6 @@ func writeInvoices(dir string, invoices []Invoice) error {
 	return nil
 }
 
-func payoutExists(payouts []Payout, id string) bool {
-	for _, p := range payouts {
-		if p.Id == id {
-			return true
-		}
-	}
-	return false
-}
-
 func commitSnapshot() error {
 	if err := os.Rename(dataDir, oldDir); err != nil {
 		return err
@@ -268,12 +243,4 @@ func commitSnapshot() error {
 	}
 
 	return os.RemoveAll(oldDir)
-}
-
-func payoutsPath(dir string) string {
-	return filepath.Join(dir, payoutsCsv)
-}
-
-func invoicesPath(dir string) string {
-	return filepath.Join(dir, invoicesCsv)
 }
