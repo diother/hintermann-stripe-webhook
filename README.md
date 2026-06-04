@@ -2,6 +2,20 @@
 
 Small Go service that receives Stripe payout reconciliation webhooks, validates and enriches the payout data, and persists normalized payout + invoice records into append-only CSV files.
 
+## Processing flow
+
+```text
+Stripe webhook
+→ request parsing
+→ validation
+→ Stripe API enrichment
+→ validation
+→ row transformation
+→ persistence
+```
+
+The handler owns orchestration directly. Effects remain visible in the main execution flow.
+
 ## Project structure
 
 ```text
@@ -16,20 +30,6 @@ internal/
 scripts/          local replay
 testdata/         webhook fixtures
 ```
-
-## Processing flow
-
-```text
-Stripe webhook
-→ request parsing
-→ validation
-→ Stripe API enrichment
-→ validation
-→ row transformation
-→ persistence
-```
-
-The handler owns orchestration directly. Effects remain visible in the main execution flow.
 
 ## Persistence model
 
